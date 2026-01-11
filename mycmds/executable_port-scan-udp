@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+SCRIPT_NAME="$(basename "$0")"
+
+address=""
+
+usage() {
+    cat <<EOF
+Usage: $SCRIPT_NAME -a Address [OPTION] -- [nmap options]
+
+Options:
+  --addresses value, -a value  Target Addresses (required)
+  --help, -h                   Show this help
+EOF
+    exit 2
+}
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --addresses|-a)
+            if [[ -n "$2" && "${2:0:1}" != "-" ]]; then
+                address="$2"
+                shift 2
+            else
+                echo "Error: --addresses, -a requires a value"
+                usage
+            fi
+            ;;
+        --help|-h)
+            usage
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Error: Unknown option: $1"
+            usage
+            ;;
+    esac
+done
+
+if [[ -z "$address" ]]; then
+    echo "Error: --addresses, -a is required"
+    usage
+fi
+
+cmd=(sudo nmap -sU "$address")
+cmd+=("$@")
+
+printf 'Run: %s\n\n' "${cmd[*]}"
+exec "${cmd[@]}"

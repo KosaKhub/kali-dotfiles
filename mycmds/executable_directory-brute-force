@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+SCRIPT_NAME="$(basename "$0")"
+
+# ===== デフォルト値 =====
+DEFAULT_WORDLIST="/usr/share/wordlists/dirb/common.txt"
+DEFAULT_EXTENSIONS="html,js,txt,db"
+DEFAULT_THREADS=32
+
+wordlist="$DEFAULT_WORDLIST"
+extensions="$DEFAULT_EXTENSIONS"
+threads="$DEFAULT_THREADS"
+url=""
+
+usage() {
+    cat <<EOF
+Usage: $SCRIPT_NAME -u URL [OPTIONS] -- [gobuster options]
+
+Options:
+  --url value, -u value            Target URL (required)
+  --wordlist value, -w value       Wordlist path (default: $DEFAULT_WORDLIST)
+  --extensions value, -x value     Extensions (default: $DEFAULT_EXTENSIONS)
+  --threads value, -t value        Threads (default: $DEFAULT_THREADS)
+  --addextensions value, -a value  Add extensions to default extensions
+  --help, -h                       Show this help
+
+Examples:
+  $SCRIPT_NAME -u http://localhost
+  $SCRIPT_NAME -u http://localhost -w custom.txt
+  $SCRIPT_NAME -u http://localhost -- -o out.txt -q -k
+EOF
+    exit 2
+}
+
+# ===== 自分のオプションだけ処理 =====
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --url|-u)
+            if [[ -n "$2" && "${2:0:1}" != "-" ]]; then
+                url="$2"
+                shift 2
+            else
+                echo "Error: --url, -u requires a value"
+                usage
+            fi
+            ;;
+        --wordlist|-w)
+            if [[ -n "$2" && "${2:0:1}" != "-" ]]; then
+                wordlist="$2"
+                shift 2
+            else
+                echo "Error: --wordlist, -w requires a value"
+                usage
+            fi
+            ;;
+        --extensions|-x)
+            if [[ -n "$2" && "${2:0:1}" != "-" ]]; then
+                extensions="$2"
+                shift 2
+            else
+                echo "Error: --extensions, -x requires a value"
+                usage
+            fi
+            ;;
+        --threads|-t)
+            if [[ -n "$2" && "${2:0:1}" != "-" ]]; then
+                threads="$2"
+                shift 2
+            else
+                echo "Error: --threads, -t requires a value"
+                usage
+            fi
+            ;;
+        --addextensions|-a)
+            if [[ -n "$2" && "${2:0:1}" != "-" ]]; then
+                extensions="${extensions},$2"
+                shift 2
+            else
+                echo "Error: --addextensions, -a requires a value"
+                usage
+            fi
+            ;;
+        --help|-h)
+            usage
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Error: Unknown option: $1"
+            usage
+            ;;
+    esac
+done
+
+if [[ -z "$url" ]]; then
+    echo "Error: --url, -u is required"
+    usage
+fi
+
+# ===== gobuster コマンド組み立て =====
+cmd=(
+    gobuster dir
+    -u "$url"
+    -w "$wordlist"
+    -x "$extensions"
+    -t "$threads"
+)
+
+# ===== 残りは全部 gobuster に渡す =====
+cmd+=("$@")
+
+# ===== 実行 =====
+printf 'Run: %s\n\n' "${cmd[*]}"
+exec "${cmd[@]}"

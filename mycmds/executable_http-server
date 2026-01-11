@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+cmd=(python -m http.server 80)
+printf 'Run: %s\n\n' "${cmd[*]}"
+exec "${cmd[@]}"

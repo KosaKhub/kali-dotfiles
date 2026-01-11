@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+array=(item1 item2 item3)
+echo "${array[@]}"
+echo "${#array[@]}"
+
+array2=("${array[@]}" item4 item5)
+echo "${array2[@]}"
+echo "${#array2[@]}"
+
+echo "${array2[@]}test"
