@@ -1,6 +1,8 @@
 export PATH=$PATH:$HOME/mycmds
 
 alias toclipboard='xclip -selection clipboard'
+alias vfsmount='sudo mount -t virtiofs shared /mnt/shared'
+alias vfsumount='sudo umount /mnt/shared'
 
 #export PYENV_ROOT="$HOME/.pyenv"
 #export PATH="$PYENV_ROOT/bin:$PATH"
